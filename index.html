@@ -15,11 +15,13 @@
             background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
             background: linear-gradient(to top, #a18cd1 0%, #fbc2eb 100%); 
             font-family: 'Poppins', sans-serif;
+            /* These flex properties center the card later, 
+               but we will absolutely center the gift box now. */
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'  width='40' height='48' viewport='0 0 100 100' style='fill:black;font-size:24px;'><text y='50%'>❤️</text></svg>") 16 0, auto; 
-            touch-action: manipulation; /* Improves touch response */
+            touch-action: manipulation;
         }
 
         /* --- BACKGROUND HEARTS --- */
@@ -49,18 +51,21 @@
              100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; }
         }
 
-        /* --- STAGE 1: GIFT BOX --- */
+        /* --- STAGE 1: GIFT BOX (FIXED CENTERING) --- */
         #gift-container {
+            /* Absolute positioning to guarantee center */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            /* This moves it back by 50% of its own width/height to center perfectly */
+            transform: translate(-50%, -50%);
+            
             text-align: center;
             z-index: 50;
             cursor: pointer;
-            transition: transform 0.3s;
-            position: relative;
-            -webkit-tap-highlight-color: transparent; /* Removes blue tap box on mobile */
-        }
-
-        #gift-container:active {
-            transform: scale(0.95);
+            /* Smooth transition for opening animation */
+            transition: all 0.5s ease-in-out; 
+            -webkit-tap-highlight-color: transparent;
         }
 
         .gift-box {
@@ -98,12 +103,14 @@
             position: relative;
             z-index: 40;
             width: 100%;
-            display: flex; /* Flex to center nicely */
+            /* Ensures the card is centered when it appears */
+            display: flex; 
             justify-content: center;
+            align-items: center;
         }
 
         .card {
-            background: rgba(255, 255, 255, 0.75); /* Slightly more opaque for readability */
+            background: rgba(255, 255, 255, 0.75);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
             border: 2px solid rgba(255, 255, 255, 0.5);
@@ -112,9 +119,9 @@
             text-align: center;
             box-shadow: 0 15px 35px rgba(0,0,0,0.1);
             width: 380px;
-            max-width: 85vw; /* Prevents card from touching edges on mobile */
+            max-width: 85vw; /* Responsive width */
             animation: zoomIn 0.8s ease-out forwards;
-            display: none; /* Initially hidden */
+            display: none;
         }
 
         @keyframes zoomIn {
@@ -182,21 +189,21 @@
         /* --- RESPONSIVE ADJUSTMENTS (SMARTPHONES) --- */
         @media (max-width: 600px) {
             .gift-box {
-                font-size: 6rem; /* Smaller gift icon */
+                font-size: 6rem; /* Smaller gift icon on mobile */
             }
             
             .card {
-                padding: 1.5rem; /* Less padding inside card */
-                width: 90%; /* Take up more width */
+                padding: 1.5rem;
+                width: 90%;
             }
 
             .photo-area {
-                width: 100px; /* Smaller photo */
+                width: 100px;
                 height: 100px;
             }
 
             h1 {
-                font-size: 2.2rem; /* Smaller title */
+                font-size: 2.2rem;
             }
 
             h2 {
@@ -205,7 +212,7 @@
             }
 
             .message {
-                font-size: 0.85rem; /* Readable but smaller text */
+                font-size: 0.85rem;
                 padding: 10px;
             }
 
@@ -227,7 +234,6 @@
             z-index: 10;
             opacity: 0.9;
             animation: floatUp linear forwards;
-            /* Ensure balloons are touchable on mobile */
             touch-action: manipulation;
         }
         .balloon::before {
@@ -315,7 +321,7 @@
         // 0. BACKGROUND HEARTS
         function createBackgroundHearts() {
             const container = document.getElementById('bg-hearts-container');
-            const heartCount = 40; // Reduced slightly for mobile performance
+            const heartCount = 40; 
 
             for(let i=0; i<heartCount; i++){
                 const heart = document.createElement('div');
@@ -330,27 +336,25 @@
         }
         createBackgroundHearts();
 
-        // 1. OPEN GIFT
+        // 1. OPEN GIFT (FIXED ANIMATION)
         function openGift() {
             const gift = document.getElementById('gift-container');
             const cardContainer = document.getElementById('card-container');
             const card = document.getElementById('main-card');
             
-            // Hide gift
-            gift.style.transition = "opacity 0.5s, transform 0.5s";
+            // Animate gift opening while maintaining center position
             gift.style.opacity = "0";
-            gift.style.transform = "scale(2)";
+            // We must keep the translate(-50%, -50%) so it scales from the center
+            gift.style.transform = "translate(-50%, -50%) scale(2)";
             
             setTimeout(() => {
                 gift.style.display = "none";
-                cardContainer.style.display = "flex"; // Using flex to align
+                cardContainer.style.display = "flex"; 
                 card.style.display = "block";
-                
-                // Play Audio if you want? (Optional)
                 
                 startConfetti(); 
                 startBalloonSpawner(); 
-            }, 400);
+            }, 500);
         }
 
         // 2. MAKE A WISH
@@ -387,14 +391,12 @@
 
             // Interaction: Pop on click (and touch)
             const popBalloon = (e) => {
-                // Prevent double firing on some devices
                 e.preventDefault();
                 e.stopPropagation();
                 
                 balloon.style.transform = "scale(1.5)";
                 balloon.style.opacity = "0";
                 
-                // Get coordinates for burst
                 const rect = balloon.getBoundingClientRect();
                 createClickBurst(rect.left + rect.width/2, rect.top + rect.height/2);
                 
@@ -412,7 +414,6 @@
         }
 
         function startBalloonSpawner() {
-            // Check if mobile to adjust spawn rate (optional)
             const isMobile = window.innerWidth < 600;
             setInterval(createBalloon, isMobile ? 800 : 500); 
         }
@@ -423,10 +424,8 @@
             createClickBurst(e.clientX, e.clientY);
         });
         
-        // Also add touch support for background clicks
         document.addEventListener('touchstart', (e) => {
              if(e.target.tagName === 'BUTTON' || e.target.closest('#gift-container') || e.target.classList.contains('balloon')) return;
-             // Use first touch point
              createClickBurst(e.touches[0].clientX, e.touches[0].clientY);
         }, {passive: true});
 
